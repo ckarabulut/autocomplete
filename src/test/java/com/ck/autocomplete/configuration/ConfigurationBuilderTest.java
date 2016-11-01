@@ -49,11 +49,12 @@ public class ConfigurationBuilderTest {
     @Test
     public void test_build() {
         SearchElementLoader searchElementLoader = Mockito.mock(SearchElementLoader.class);
-        ConfigurationBuilder configurationBuilder = new ConfigurationBuilder<>(searchElementLoader);
+        Tokenizer tokenizer = Mockito.mock(Tokenizer.class);
+        Configuration build = new ConfigurationBuilder<>(searchElementLoader).setTokenizer(tokenizer).setMaxResultCount(100).build();
 
-        Configuration build = configurationBuilder.build();
         Assert.assertEquals(searchElementLoader, build.getSearchElementLoader());
-        Assert.assertEquals(StringTokenizer.class, build.getTokenizer().getClass());
+        Assert.assertEquals(tokenizer, build.getTokenizer());
+        Assert.assertEquals(100, build.getDefaultMaxSearchResult());
     }
 
 }

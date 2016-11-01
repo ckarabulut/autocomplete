@@ -7,5 +7,6 @@ import java.util.List;
 public interface Search<TModel> {
 
 	List<SearchElement<TModel>> search(String words);
+	void reindex();
 
 }

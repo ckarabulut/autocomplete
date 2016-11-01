@@ -12,10 +12,10 @@ public class SuffixTreeSearch<TModel> {
 
     public final static int AUTOCOMPLETE_MAX_KEYWORD_LENGHT = 20;
 
-    private final SuffixTreeCache<TModel> suffixTreeCache;
+    private final SuffixTree<TModel> suffixTree;
 
-    public SuffixTreeSearch(SuffixTreeCache<TModel> suffixTreeCache) {
-        this.suffixTreeCache = suffixTreeCache;
+    public SuffixTreeSearch(SuffixTree<TModel> suffixTree) {
+        this.suffixTree = suffixTree;
     }
 
     /**
@@ -25,7 +25,7 @@ public class SuffixTreeSearch<TModel> {
      */
     public Map<Integer, Set<SearchElement<TModel>>> search(String[] normalizedWords) {
         if (normalizedWords.length == 0) {
-            return new HashMap<Integer, Set<SearchElement<TModel>>>();
+            return new HashMap<>();
         }
 
         Map<Integer, Set<SearchElement<TModel>>> allResults = searchWord(normalizedWords[0]);
@@ -42,8 +42,7 @@ public class SuffixTreeSearch<TModel> {
         }
 
         char[] chars = word.toCharArray();
-        SuffixTree<TModel> instance = suffixTreeCache.getInstance();
-        SuffixTreeNode<TModel> currentNode = instance.getRoot();
+        SuffixTreeNode<TModel> currentNode = suffixTree.getRoot();
         for (int i = 0; i < chars.length; i++) {
             SuffixTreeNode<TModel> child = currentNode.getChild(chars[i]);
             if (child == null || !(child instanceof SuffixTreeNode)) {
@@ -68,7 +67,6 @@ public class SuffixTreeSearch<TModel> {
 
     /**
      * Merge given map of Search Element Sets with an upper bound count.
-     *
      */
     public void mergeSetOfMaps(Map<Integer, Set<SearchElement<TModel>>> baseMap, Map<Integer, Set<SearchElement<TModel>>> appendantMap) {
         for (Entry<Integer, Set<SearchElement<TModel>>> entry : appendantMap.entrySet()) {
@@ -83,7 +81,6 @@ public class SuffixTreeSearch<TModel> {
 
     /**
      * Take intersection parts of two map of sets
-     *
      */
     public Map<Integer, Set<SearchElement<TModel>>> createIntersectionSetOfMaps(Map<Integer, Set<SearchElement<TModel>>> baseMap, Map<Integer, Set<SearchElement<TModel>>> appendantMap) {
 

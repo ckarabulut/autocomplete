@@ -7,12 +7,16 @@ import com.ck.autocomplete.mapper.TurkishCharMapper;
 
 public class ConfigurationBuilder<T> {
 
+    private static final int DEFAULT_MAX_RESULT_COUNT = 30;
+
     private Tokenizer tokenizer;
     private SearchElementLoader<T> searchElementLoader;
+    private int maxResultCount;
 
     public ConfigurationBuilder(SearchElementLoader<T> searchElementLoader) {
         this.searchElementLoader = searchElementLoader;
         this.tokenizer = new StringTokenizer(new TurkishCharMapper());
+        this.maxResultCount = DEFAULT_MAX_RESULT_COUNT;
     }
 
     public Tokenizer getTokenizer() {
@@ -38,8 +42,17 @@ public class ConfigurationBuilder<T> {
         return this;
     }
 
+    public int getMaxResultCount() {
+        return maxResultCount;
+    }
+
+    public ConfigurationBuilder<T> setMaxResultCount(int maxResultCount) {
+        this.maxResultCount = maxResultCount;
+        return this;
+    }
+
     public Configuration<T> build() {
-        return new Configuration<>(tokenizer, searchElementLoader);
+        return new Configuration<>(tokenizer, searchElementLoader, maxResultCount);
     }
 
 }

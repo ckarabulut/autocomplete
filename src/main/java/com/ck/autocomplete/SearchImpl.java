@@ -2,9 +2,8 @@ package com.ck.autocomplete;
 
 import com.ck.autocomplete.comparator.SearchElementComparator;
 import com.ck.autocomplete.configuration.Configuration;
-import com.ck.autocomplete.configuration.Tokenizer;
-import com.ck.autocomplete.configuration.loader.SearchElementLoader;
 import com.ck.autocomplete.element.SearchElement;
+import com.ck.autocomplete.suffixtree.SuffixTreeFactory;
 import com.ck.autocomplete.suffixtree.SuffixTreeSearch;
 
 import java.util.*;
@@ -13,25 +12,29 @@ import java.util.concurrent.ConcurrentSkipListMap;
 
 public class SearchImpl<TModel> implements Search<TModel> {
 
-    public static int AUTOCOMPLETE_MAX_RESULT_COUNT = 30;
+    private final Configuration<TModel> configuration;
+    private final SuffixTreeFactory<TModel> suffixTreeFactory;
 
-    private final SuffixTreeSearch<TModel> treeSearch;
-    private final Tokenizer tokenizer;
-    private final SearchElementLoader<TModel> elementLoader;
+    private SuffixTreeSearch<TModel> treeSearch;
 
-    public SearchImpl(Configuration configuration) {
-        this.tokenizer = configuration.getTokenizer();
-        this.elementLoader = configuration.getSearchElementLoader();
-        this.treeSearch = null;
+    public SearchImpl(Configuration<TModel> configuration) {
+        this.configuration = configuration;
+        this.suffixTreeFactory = new SuffixTreeFactory<>(configuration.getSearchElementLoader());
+        this.treeSearch = new SuffixTreeSearch<>(suffixTreeFactory.create());
     }
 
     @Override
     public List<SearchElement<TModel>> search(String words) {
-        String[] normalizedWords = tokenizer.tokenize(words);
+        String[] normalizedWords = configuration.getTokenizer().tokenize(words);
         Map<Integer, Set<SearchElement<TModel>>> resultMap = treeSearch.search(normalizedWords);
 
         List<SearchElement<TModel>> resultList = getSortedResult(resultMap);
         return resultList;
+    }
+
+    @Override
+    public void reindex() {
+        this.treeSearch = new SuffixTreeSearch<>(suffixTreeFactory.create());
     }
 
     private List<SearchElement<TModel>> getSortedResult(Map<Integer, Set<SearchElement<TModel>>> resultMap) {
@@ -49,12 +52,12 @@ public class SearchImpl<TModel> implements Search<TModel> {
             sortedSet.addAll(currentSet);
 
             resultList.addAll(sortedSet);
-            if (resultList.size() >= AUTOCOMPLETE_MAX_RESULT_COUNT) {
+            if (resultList.size() >= configuration.getDefaultMaxSearchResult()) {
                 break;
             }
         }
-        if (resultList.size() > AUTOCOMPLETE_MAX_RESULT_COUNT) {
-            return resultList.subList(0, AUTOCOMPLETE_MAX_RESULT_COUNT);
+        if (resultList.size() > configuration.getDefaultMaxSearchResult()) {
+            return resultList.subList(0, configuration.getDefaultMaxSearchResult());
         }
         return resultList;
     }
